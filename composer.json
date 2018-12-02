@@ -1,0 +1,16 @@
+{
+  "name": "riatabduramani/game-of-three",
+  "description": "This game is based on api communication, generating a random number and the players should find if is divisible with 3 or not, in mean time they can change the number by using three options -1,0,1 to transform the number for dividing with 3.",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "ext-curl": "*",
+    "ext-json": "*",
+    "ext-readline": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "GameOfThree\\": "src/"
+    }
+  }
+}
