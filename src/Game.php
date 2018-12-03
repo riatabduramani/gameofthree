@@ -128,7 +128,7 @@ class Game
             $this->_gameID = $response['id'];
             $this->_newgame = true;
 
-            print "Waiting for the second player to Join.\n";
+            echo "Waiting " . self::TIMEOUT . " seconds for 'Player B' to Join the game.\n";
 
             $playerFound = false;
             $i = 0;
@@ -144,6 +144,7 @@ class Game
                     $this->_gameID = $trying['id'];
                 }
 
+                echo ".";
                 $this->timeout($i);
             }
         }
@@ -182,7 +183,10 @@ class Game
             if ($this->_isWinner === false) echo "\nYou just lose!\n";
         }
 
-        if ($this->_timeout === true) echo "\nTimeout!\n";
+        if ($this->_timeout === true) {
+            $this->_conn->delete();
+            echo "\nTimeout!\n";
+        }
 
         echo "GAME OVER\n";
         return exit;
