@@ -10,7 +10,7 @@ namespace GameOfThree;
 class Game
 {
     const CALL_SERVICE = 'games/';
-    const TIMEOUT = 10;
+    const TIMEOUT = 30;
     const STARTING_VALUE = [100, 500];
     public $player_name;
     protected $_channel;
@@ -25,7 +25,7 @@ class Game
 
     public function __construct()
     {
-        $this->_conn = new Api();
+        $this->_conn = new Api;
         $this->_conn->call_service = self::CALL_SERVICE;
         $this->welcome();
         $this->joinGame();
@@ -61,31 +61,54 @@ class Game
         if ($this->available_channels > 0 && $this->_isOver === false) {
 
             echo "\n";
-            $input = readline("Enter channel number to join the game or enter 'n' for new game: ");
+            $input = readline("Enter channel number to join the game, or enter 'n' = for new game, 's' = search channels: ");
             echo "\n";
+            $input_string = ['n', 's'];
+            $input_channels = array_values(range(1, $this->available_channels));
+            $options = array_merge($input_string, $input_channels);
 
-            if ((is_numeric($input) && $input <= (count($response))) || $input == 'n') {
-                switch ($input) {
-                    case "n":
-                        $this->createGame();
-                        break;
-                    case $input > 0:
-                        $response = $response[$input];
-                        $this->_gameID = $response['id'];
-                        $request = $response;
-                        $request['player_2'] = 'Player B';
-                        $this->addPlayer($request);
-                        $this->messageGameStarted($request['player_2']);
-                        break;
-                }
-
-
-            } else {
-                self::joinGame();
+            while (!in_array($input, $options)) {
+                $input = readline("Enter channel number to join the game, or enter 'n' = for new game, 's' = search channels: ");
             }
+
+            switch ($input) {
+                case "n":
+                    $this->createGame();
+                    break;
+                case "s":
+                    self::joinGame();
+                    break;
+                case is_numeric($input) > 0:
+                    $response = $response[$input];
+                    $this->_gameID = $response['id'];
+                    $request = $response;
+                    $request['player_2'] = 'Player B';
+                    $this->addPlayer($request);
+                    $this->messageGameStarted($request['player_2']);
+                    break;
+            }
+
         } else {
             echo "Not available Game Channels.\n\n";
-            $this->createGame();
+            $input = readline("n = create new game or s = search for channels: ");
+
+            while (!in_array($input, ['n', 's'])) {
+                $input = readline("n = create new game or s = search for channels: ");
+            }
+
+            switch ($input) {
+                case 'n':
+                    $this->createGame();
+                    break;
+                case 's':
+                    self::joinGame();
+                    break;
+                default:
+                    self::joinGame();
+                    break;
+
+            }
+
         }
     }
 
@@ -116,6 +139,7 @@ class Game
                 if (!empty($trying['player_2'])) {
                     $playerFound = true;
                     echo "'" . $trying['player_2'] . "' joined game.\n";
+                    sleep(1);
                     $this->messageGameStarted($trying['player_1']);
                     $this->_gameID = $trying['id'];
                 }
@@ -152,9 +176,6 @@ class Game
 
     protected function endGame()
     {
-        if ($this->_isOver == true && $this->_isWinner === false) {
-            $this->_conn->delete();
-        }
 
         if ($this->_timeout === false) {
             if ($this->_isWinner === true) echo "\nYou win the game!\n";

@@ -37,7 +37,7 @@ class Player extends Game
 
                 $gameExists = $this->getGameByID();
 
-                if (!isset($gameExists['id'])) {
+                if (isset($gameExists['value']) && ($gameExists['value'] == 1)) {
                     $this->_isOver = true;
                     $this->_isWinner = false;
                     $this->endGame();
@@ -64,33 +64,33 @@ class Player extends Game
 
     public function nextPlayer()
     {
-
-        if ($this->_newgame == false && $this->_isOver == false && empty($this->play_id)) {
-            $this->setPlayId();
-        }
-
         $return_value = $this->_value;
-        echo "\n[x] Value to play: " . $return_value . "\n";
+        if ($this->_newgame == true) {
+            echo "\n[x] Send value: " . $return_value . "\n";
+            $option = null;
+        } else {
+            echo "\n[x] Received value: " . $return_value;
 
-        $option = $this->findNumber();
+            if (empty($this->play_id)) {
+                $this->setPlayId();
+            }
 
-        if (!empty($option) && $option != false) {
+            $option = $this->findNumber();
+
             $return_value += $option;
-            echo "\nValue changed to: " . $return_value . " with option: " . $option . "\n";
+            echo "\n[x] Value changed to: " . $return_value . " with option: " . $option;
+            echo "\n[x] Send value: " . $return_value / 3 . "\n";
+
         }
 
         $request = $this->sendRequest($this->request($option));
 
         if ($request === true) {
-
             $this->checkValue();
-
-            echo "Waiting for the next player!\n";
-
-            return true;
+            echo "[!] Waiting for the next player...\n";
         }
 
-        return false;
+
     }
 
     public function setPlayId()
@@ -117,17 +117,18 @@ class Player extends Game
 
     public function findNumber()
     {
-        $input = '';
-        foreach (self::INPUT_OPTIONS as $option) {
-            if (($this->_value + ($option)) % 3 == 0) {
+        $input = null;
+        foreach ($this->allowedOptions as $option) {
+            $number = $this->_value;
+            if (((($number + ($option))) % 3) == 0) {
                 $input = $option;
-                $this->_value += $option;
+                $this->_value += $input;
                 break;
             }
         }
 
         $this->_value /= 3;
-        return (!empty($input)) ? $input : false;
+        return $input;
     }
 
     private function sendRequest($request)
